@@ -1,0 +1,13 @@
+FROM quay.io/centos/centos:stream9
+
+RUN dnf install -y httpd php tar && dnf clean all
+
+# Copy existing nagios installation
+COPY nagios-backup.tar.gz /tmp/
+
+RUN cd /usr/local && \
+    tar -xzvf /tmp/nagios-backup.tar.gz
+
+EXPOSE 80
+
+CMD /usr/sbin/httpd && /usr/local/nagios/bin/nagios /usr/local/nagios/etc/nagios.cfg
