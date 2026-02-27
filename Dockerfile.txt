@@ -1,13 +1,18 @@
-FROM quay.io/centos/centos:stream9
+FROM ubuntu:24.04
 
-RUN dnf install -y httpd php tar && dnf clean all
+# Create non-root user with UID 1000
+RUN groupadd -g 1000 appuser && \
+    useradd -m -u 1000 -g 1000 -s /bin/bash appuser
 
-# Copy existing nagios installation
-COPY nagios-backup.tar.gz /tmp/
+# Install required packages
+RUN apt update && apt install -y apache2 wget unzip
 
-RUN cd /usr/local && \
-    tar -xzvf /tmp/nagios-backup.tar.gz
+# Change ownership of application directories
+RUN chown -R appuser:appuser /var/www
+
+# Switch to non-root user
+USER appuser
 
 EXPOSE 80
 
-CMD /usr/sbin/httpd && /usr/local/nagios/bin/nagios /usr/local/nagios/etc/nagios.cfg
+CMD ["apache2ctl", "-D", "FOREGROUND"]
