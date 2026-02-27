@@ -1,18 +1,20 @@
 FROM ubuntu:24.04
 
-# Create non-root user with UID 1000
-RUN groupadd -g 1000 appuser && \
-    useradd -m -u 1000 -g 1000 -s /bin/bash appuser
-
 # Install required packages
 RUN apt update && apt install -y apache2 wget unzip
 
-# Change ownership of application directories
-RUN chown -R appuser:appuser /var/www
+# Create nagios user with UID 1000
+RUN groupadd -g 1000 nagios && \
+    useradd -m -u 1000 -g nagios -s /bin/bash nagios
+
+# Create Nagios directory
+RUN mkdir -p /usr/local/nagios && \
+    chown -R nagios:nagios /usr/local/nagios && \
+    chown -R nagios:nagios /var/www
 
 # Switch to non-root user
-USER appuser
+USER nagios
 
-EXPOSE 80
+EXPOSE 8080
 
 CMD ["apache2ctl", "-D", "FOREGROUND"]
